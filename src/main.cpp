@@ -144,11 +144,12 @@ int main(int argc, char** argv) {
 
      //Load Textures
      textureManager->LoadFile("resources/textures/cat.jpg");
-     textureManager->LoadFile("resources/textures/catCube.png");
+     textureManager->LoadFile("resources/textures/catCube.jpg");
+     textureManager->LoadFile("resources/textures/catCubeLabeled.png");
 
      //Create Objects
      auto unlitCube = Object::CreateObject(  meshManager->GetValue("cube"),     shaderManager->GetValue("cube"),        nullptr,                           glm::vec3(0.0f, 0.0f, 0.0f),  glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.1f));
-     auto litCube =   Object::CreateObject(  meshManager->GetValue("cube"),     shaderManager->GetValue("litCube"),     textureManager->GetValue("catCube"),   glm::vec3(1.0f, 0.0f, 0.0f),  glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.5f));
+     auto litCube =   Object::CreateObject(  meshManager->GetValue("cube"),     shaderManager->GetValue("litCube"),     textureManager->GetValue("catCubeLabeled"),   glm::vec3(1.0f, 0.0f, 0.0f),  glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.5f));
      auto pyramid =   Object::CreateObject(  meshManager->GetValue("pyramid"),  shaderManager->GetValue("litCube"),     textureManager->GetValue("cat"),   glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.25f));
      auto ship =      Object::CreateObject(  meshManager->GetValue("ship"),     shaderManager->GetValue("litCube"),     nullptr,                           glm::vec3(0.0f, 1.0f, 0.0f),  glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.25f));
 
