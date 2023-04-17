@@ -7,9 +7,9 @@ out vec3 fragPos;
 out vec3 normal;
 out vec2 vST;
 
-uniform mat4 model;
-uniform mat4 view;
 uniform mat4 projection;
+uniform mat4 view;
+uniform mat4 model;
 
 void main(){
      vST = aTexCoord;

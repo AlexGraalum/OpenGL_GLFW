@@ -1,28 +1,17 @@
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
+//Includes
 #include "engine\graphics\window.h"
-
-#include "engine\graphics\vertex_array.h"
-#include "engine\graphics\vertex_buffer.h"
-#include "engine\graphics\element_buffer.h"
-
-#include "engine\graphics\texture.h"
-#include "engine\graphics\mesh.h"
-#include "engine\graphics\shader.h"
-
 #include "engine\graphics\camera.h"
+#include "engine\graphics\object.h"
+
+#include "engine\file_manager.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
-#include <vector>
-
-#include <string>
 
 //DEFINES
-#define MINSPIN 5.0f
-#define MAXSPIN 50.0f
+#define MINSPIN 1.0f
+#define MAXSPIN 100.0f
 
 //PROTOTYPES
 void framebuffer_size_callback(GLFWwindow*, int, int);
@@ -35,6 +24,10 @@ void Animate();
 //GLOBALS
 std::shared_ptr<Window> windowPtr;
 std::shared_ptr<Camera> camera;
+
+FileManager<Mesh>* meshManager;
+FileManager<Shader>* shaderManager;
+FileManager<Texture>* textureManager;
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
@@ -95,8 +88,8 @@ const float squareRot[] = {
      0.0f,
 };
 const glm::vec2 squareScale[] = {
-     glm::vec2(0.5f),
-     glm::vec2(0.25f),
+     glm::vec2(0.1f),
+     glm::vec2(0.05f),
 };
 //Triangle
 GLfloat triangleVertices[] = {
@@ -126,33 +119,65 @@ int main(int argc, char** argv) {
 
      //Create Camera
      camera = Camera::CreateCamera(glm::vec3(0.0f, 0.0f, 6.0f),
-                                        45.0f,
-                                        glm::vec3(0.0f, 0.0f, 0.0f),
-                                        glm::vec3(0.0f, 1.0f, 0.0f),
-                                        2.0f);
+                                   glm::vec2(SCR_WIDTH, SCR_HEIGHT),
+                                   45.0f,
+                                   glm::vec3(0.0f, 0.0f, 0.0f),
+                                   glm::vec3(0.0f, 1.0f, 0.0f),
+                                   2.0f);
 
      camera->MoveBack(5.0f);
 
-     //Load and Create Texture
-     auto texture = Texture::CreateTexture("resources/textures/cat.jpg");
-     auto catCubeTex = Texture::CreateTexture("resources/textures/catCube.png");
+     //Initialize Managers
+     meshManager = new FileManager<Mesh>();
+     shaderManager = new FileManager<Shader>();
+     textureManager = new FileManager<Texture>();
 
-     //Build Shader
-     auto unLitCubeShader = Shader::Create("resources/shaders/cube.vs", "resources/shaders/cube.fs");
-     auto litCubeShader = Shader::Create("resources/shaders/litCube.vs", "resources/shaders/litCube.fs");
-     auto squareShader = Shader::Create("resources/shaders/square.vs", "resources/shaders/square.fs");
+     //Load Meshes
+     meshManager->LoadFile("resources/models/cube.obj");
+     meshManager->LoadFile("resources/models/ship.obj");
+     meshManager->LoadFile("resources/models/pyramid.obj");
 
-     //Prepare Meshes
-     auto squareMesh = Mesh::CreateMesh(squareVertices, squareIndices);
-     auto cubeMesh = Mesh::CreateMesh("resources/models/cube.obj");
-     auto pyramidMesh = Mesh::CreateMesh("resources/models/testPyramid.obj");
+     //Load Shaders
+     shaderManager->LoadFile("resources/shaders/litCube.vs", "resources/shaders/litCube.fs");
+     shaderManager->LoadFile("resources/shaders/cube.vs", "resources/shaders/cube.fs");
+     shaderManager->LoadFile("resources/shaders/square.vs", "resources/shaders/square.fs");
 
-     auto shipMesh = Mesh::CreateMesh("resources/models/ship.obj");
+     //Load Textures
+     textureManager->LoadFile("resources/textures/cat.jpg");
+     textureManager->LoadFile("resources/textures/catCube.png");
 
-     lightPos = glm::vec3(0.0f);
+     //Create Objects
+     auto unlitCube = Object::CreateObject(  meshManager->GetValue("cube"),     shaderManager->GetValue("cube"),        nullptr,                           glm::vec3(0.0f, 0.0f, 0.0f),  glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.1f));
+     auto litCube =   Object::CreateObject(  meshManager->GetValue("cube"),     shaderManager->GetValue("litCube"),     textureManager->GetValue("catCube"),   glm::vec3(1.0f, 0.0f, 0.0f),  glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.5f));
+     auto pyramid =   Object::CreateObject(  meshManager->GetValue("pyramid"),  shaderManager->GetValue("litCube"),     textureManager->GetValue("cat"),   glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.25f));
+     auto ship =      Object::CreateObject(  meshManager->GetValue("ship"),     shaderManager->GetValue("litCube"),     nullptr,                           glm::vec3(0.0f, 1.0f, 0.0f),  glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.25f));
 
-     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+     //std::shared_ptr<Object> object = Object::CreateObject("resources/models/cube.obj", "resources/shaders/litCube.vs", "resources/shaders/litCube.fs", "resources/textures/cat.jpg", glm::vec3(0.0f, 0.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 0.0f), glm::vec3(1.0f));
+     //std::shared_ptr<Object> object = Object::CreateObject(meshManager->GetValue("cube"), shaderManager->GetValue("litCube"), textureManager->GetValue("cat"), glm::vec3(0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(1.0f));
+     //Object *object = new Object(meshManager->GetValue("cube"), shaderManager->GetValue("litCube"), textureManager->GetValue("cat"), glm::vec3(0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(1.0f));
+     //std::shared_ptr<Object> object = Object::CreateObject(meshManager->GetValue("cube"), nullptr, nullptr, glm::vec3(0.0f), glm::vec4(0.0f), glm::vec3(1.0f));
+
+     ////Load and Create Texture
+     //auto texture = Texture::CreateTexture("resources/textures/cat.jpg");
+     //auto catCubeTex = Texture::CreateTexture("resources/textures/catCube.png");
+     //
+     ////Build Shader
+     //auto unLitCubeShader = Shader::Create("resources/shaders/cube.vs", "resources/shaders/cube.fs");
+     //auto litCubeShader = Shader::Create("resources/shaders/litCube.vs", "resources/shaders/litCube.fs");
+     //auto squareShader = Shader::Create("resources/shaders/square.vs", "resources/shaders/square.fs");
+     //
+     ////Prepare Meshes
+     //auto squareMesh = Mesh::CreateMesh(squareVertices, squareIndices);
+     //auto cubeMesh = Mesh::CreateMesh("resources/models/cube.obj");
+     //auto pyramidMesh = Mesh::CreateMesh("resources/models/testPyramid.obj");
+     //
+     //auto shipMesh = Mesh::CreateMesh("resources/models/ship.obj");
+
+     //lightPos = glm::vec3(-1.0f, 2.0f, 0.0f);
+
+     //glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
      while (!windowPtr->ShouldClose()) {
+          glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
           float currentFrame = static_cast<float>(glfwGetTime());
           deltaTime = currentFrame - lastFrame;
           lastFrame = currentFrame;
@@ -165,21 +190,31 @@ int main(int argc, char** argv) {
           //Clear Screen
           glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-          //Render 3D Scene
-          cubeMesh->Draw3D(lightPos, glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.1f), camera, { unLitCubeShader }, { NULL }, {});
+          ////Render 3D Scene
+          unlitCube->Draw3D(camera, glm::vec3(0.0f));
 
-          cubeMesh->Draw3D(   glm::vec3( 1.0f,  1.0f,  0.0f), glm::vec4(0.0f, 1.0f, 0.0f, angle), glm::vec3(0.5f), camera, { litCubeShader }, { NULL },       lightPos);
-          pyramidMesh->Draw3D(glm::vec3( 1.0f, -1.0f,  0.0f), glm::vec4(0.0f, 1.0f, 0.0f, angle), glm::vec3(0.5f), camera, { litCubeShader }, { texture },    lightPos);
-          cubeMesh->Draw3D(   glm::vec3(-1.0f, -1.0f,  0.0f), glm::vec4(0.0f, 1.0f, 0.0f, angle), glm::vec3(0.5f), camera, { litCubeShader }, { catCubeTex }, lightPos);
+          litCube->Draw3D(camera, unlitCube->GetPosition());
+          pyramid->Draw3D(camera, unlitCube->GetPosition());
+          ship->Draw3D(camera, unlitCube->GetPosition());
 
-          shipMesh->Draw3D(   glm::vec3(-1.0f,  1.0f,  0.0f), glm::vec4(0.0f, 1.0f, 0.0f, angle), glm::vec3(1.0f), camera, {litCubeShader},   { NULL },       lightPos);
+          //object->Draw3D(camera, lightPos);
+          //cubeMesh->Draw3D(glm::vec3(0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.5f), camera, { unLitCubeShader }, { texture }, {});
+          //cubeMesh->Draw3D(lightPos, glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.1f), camera, { unLitCubeShader }, { NULL }, {});
+          //
+          //cubeMesh->Draw3D(   glm::vec3( 1.0f,  1.0f,  0.0f), glm::vec4(0.0f, 1.0f, 0.0f, angle), glm::vec3(0.5f), camera, { litCubeShader }, { NULL },       lightPos);
+          //pyramidMesh->Draw3D(glm::vec3( 1.0f, -1.0f,  0.0f), glm::vec4(0.0f, 1.0f, 0.0f, angle), glm::vec3(0.5f), camera, { litCubeShader }, { texture },    lightPos);
+          //cubeMesh->Draw3D(   glm::vec3(-1.0f, -1.0f,  0.0f), glm::vec4(0.0f, 1.0f, 0.0f, angle), glm::vec3(0.5f), camera, { litCubeShader }, { catCubeTex }, lightPos);
+          //
+          //shipMesh->Draw3D(   glm::vec3(-1.0f,  1.0f,  0.0f), glm::vec4(0.0f, 1.0f, 0.0f, angle), glm::vec3(1.0f), camera, { litCubeShader }, { NULL },       lightPos);
 
           //Render 2D Scene
-          for (unsigned int i = 0; i < (sizeof(squarePos) / sizeof(squarePos[0])); i++) {
-               squareMesh->Draw2D(squarePos[i], squareRot[i], squareScale[i], {squareShader}, {texture});
-          }
-          
-          cubeMesh->Draw3DIn2D(glm::vec3(-0.5f, 0.5f, 0.0f), glm::vec4(1.0f, 1.0f, 0.0f, angle), glm::vec3(0.1f), { unLitCubeShader }, { catCubeTex }, {});
+          pyramid->Draw2D();
+          //squareMesh->Draw2D(glm::vec2(200.0f, 0.0f), 0.0f, glm::vec2(0.5f), camera, { squareShader }, { texture });
+          //for (unsigned int i = 0; i < (sizeof(squarePos) / sizeof(squarePos[0])); i++) {
+          //     squareMesh->Draw2D(squarePos[i], squareRot[i], squareScale[i], camera, {squareShader}, {texture});
+          //}
+
+          //cubeMesh->Draw3DIn2D(glm::vec2(200.0f, 0.0f), glm::vec4(1.0f, 1.0f, 0.0f, angle), glm::vec3(0.1f), camera, { unLitCubeShader }, { catCubeTex }, {});
 
           //Poll Events and Swap Buffers
           windowPtr->Flush();

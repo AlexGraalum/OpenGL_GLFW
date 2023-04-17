@@ -3,7 +3,10 @@
 #include <fstream>
 #include <vector>
 
-Shader::Shader(const std::string_view& vertexSource, const std::string_view& fragmentSource) {
+Shader::Shader(const std::string_view& vertexPath, const std::string_view& fragmentPath) {
+     std::string vertexSource = readFile(vertexPath);
+     std::string fragmentSource = readFile(fragmentPath);
+
      this->id = glCreateProgram();
 
      uint32_t vertexID = glCreateShader(GL_VERTEX_SHADER);
@@ -98,10 +101,7 @@ Shader::~Shader() {
 }
 
 std::shared_ptr<Shader> Shader::Create(const std::string_view& vertexPath, const std::string_view& fragmentPath) {
-     std::string vertexSource = readFile(vertexPath);
-     std::string fragmentSource = readFile(fragmentPath);
-
-     return std::shared_ptr<Shader>(new Shader(vertexSource, fragmentSource));
+     return std::shared_ptr<Shader>(new Shader(vertexPath, fragmentPath));
 }
 
 std::shared_ptr<Shader> Shader::CreateFromSource(const std::string_view& vertexSource, const std::string_view& fragmentSource) {

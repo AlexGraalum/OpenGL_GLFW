@@ -68,11 +68,11 @@ Texture::~Texture() {
      glDeleteTextures(1, &this->id);
 }
 
-std::shared_ptr<Texture> Texture::CreateTexture(const std::string_view& filepath) {
+std::shared_ptr<Texture> Texture::Create(const std::string_view& filepath) {
      return std::shared_ptr<Texture>(new Texture(filepath));
 }
 
-std::shared_ptr<Texture> Texture::CreateColoredTexture(const glm::vec4& color) {
+std::shared_ptr<Texture> Texture::Create(const glm::vec4& color) {
      return std::shared_ptr<Texture>(new Texture(color));
 }
 

@@ -11,12 +11,13 @@ class Shader {
 private:
      uint32_t id;
 
-     Shader(const std::string_view& vertexSource, const std::string_view& fragmentSource);
      static std::string readFile(const std::string_view& filepath);
 
      void compileShader(uint32_t id, const char* const source, int length);
      void checkCompilerErrors(unsigned int shader, std::string type);
 public:
+     Shader(const std::string_view& vertexPath, const std::string_view& fragmentPath);
+
      ~Shader();
 
      static std::shared_ptr<Shader> Create(const std::string_view& vertexPath, const std::string_view& fragmentPath);

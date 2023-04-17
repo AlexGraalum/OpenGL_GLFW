@@ -2,8 +2,6 @@
 
 #include <memory>
 
-//#include <GLFW\glfw3.h>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -17,17 +15,23 @@ private:
      glm::vec3 cameraUp;
 
      glm::mat4 view;
-     glm::mat4 projection;
+
+     glm::vec2 screenSize;
+
+     glm::mat4 perspective;
+     glm::mat4 orthographic;
 
      float cameraSpeed;
 
-     Camera(glm::vec3 position, float fov, float speed);
-     Camera(glm::vec3 position, float fov, glm::vec3 target, glm::vec3 up, float speed);
+     Camera(glm::vec3 position, glm::vec2 screen, float fov, float speed);
+     Camera(glm::vec3 position, glm::vec2 screen, float fov, glm::vec3 target, glm::vec3 up, float speed);
 public:
      ~Camera();
 
-     static std::shared_ptr<Camera> CreateCamera(glm::vec3 position, float fov, glm::vec3 target, glm::vec3 up, float speed);
+     static std::shared_ptr<Camera> CreateCamera(glm::vec3 position, glm::vec2 screen, float fov, glm::vec3 target, glm::vec3 up, float speed);
 
+     void SetScreenSize(glm::vec2 screen) { this->screenSize = screen; }
+     glm::vec2 GetScreenSize() { return this->screenSize; }
 
      void SetPosition(glm::vec3 position) { this->cameraPos = position; }
      glm::vec3 GetPosition() { return this->cameraPos; }
@@ -46,7 +50,8 @@ public:
 
      void UpdateViewProjection();
      glm::mat4 GetView() { return this->view; }
-     glm::mat4 GetProjection() { return this->projection; }
+     glm::mat4 GetPerspective() { return this->perspective; }
+     glm::mat4 GetOrthographic() { return this->orthographic; }
 
      void SetSpeed(float speed) { this->cameraSpeed = speed; }
      float GetSpeed() { return this->cameraSpeed; }

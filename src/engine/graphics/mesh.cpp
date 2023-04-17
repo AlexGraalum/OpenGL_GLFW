@@ -94,6 +94,8 @@ void Mesh::PrepareMesh() {
      vertexArray->Unbind();
      vertexBuffer->Unbind();
      elementBuffer->Unbind();
+
+     fprintf(stderr, ".obj File has been prepared\n");
 }
 
 Mesh::~Mesh() {
@@ -103,25 +105,30 @@ Mesh::~Mesh() {
      vertexArray->Delete();
      vertexBuffer->Delete();
      elementBuffer->Delete();
+
+     fprintf(stderr, ".obj File has been deleted");
 }
 
-std::shared_ptr<Mesh> Mesh::CreateMesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices) {
+std::shared_ptr<Mesh> Mesh::Create(std::vector<Vertex> vertices, std::vector<unsigned int> indices) {
      return std::shared_ptr<Mesh>(new Mesh(vertices, indices));
 }
 
-std::shared_ptr<Mesh> Mesh::CreateMesh(std::string filePath) {
+std::shared_ptr<Mesh> Mesh::Create(std::string filePath) {
      return std::shared_ptr<Mesh>(new Mesh(filePath));
 }
 
+/*
 void Mesh::Draw3D(glm::vec3 translation, glm::vec4 rotation, glm::vec3 scale, std::shared_ptr<Camera> camera, std::vector<std::shared_ptr<Shader>> shaders, std::vector<std::shared_ptr<Texture>> textures, glm::vec3 lightPos) {
      glEnable(GL_DEPTH_TEST);
-     glm::mat4 model = glm::mat4(1.0f);
+
+     glm::mat4 projection = camera->GetPerspective();
+
+     glm::mat4 view = camera->GetView();
+
+     glm::mat4 model(1.0f);
      model = glm::translate(model, translation);
      model = glm::rotate(model, glm::radians(rotation[3]), glm::vec3(rotation[0], rotation[1], rotation[2]));
      model = glm::scale(model, scale);
-
-     glm::mat4 view = camera->GetView();
-     glm::mat4 projection = camera->GetProjection();
 
      glm::vec3 camPos = camera->GetPosition();
 
@@ -142,98 +149,88 @@ void Mesh::Draw3D(glm::vec3 translation, glm::vec4 rotation, glm::vec3 scale, st
           s->setVec3("lightPos", lightPos);
      }
 
-     /*if (texture) {
-          texture->Bind(0);
-     }
-     shader->use();
-     shader->setMat4("view", view);
-     shader->setMat4("projection", projection);
-     shader->setMat4("model", model);*/
-
      vertexArray->Bind();
      glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
 
      vertexArray->Unbind();
-     /*if (texture) {
-          texture->Unbind();
-     }*/
-
-     if (textures[0] != NULL) {
-          for (auto t : textures) { t->Unbind(); }
-     }
+     if (textures[0] != NULL) for (auto t : textures) { t->Unbind(); }
 }
 
-void Mesh::Draw3DIn2D(glm::vec3 translation, glm::vec4 rotation, glm::vec3 scale, std::vector<std::shared_ptr<Shader>> shaders, std::vector<std::shared_ptr<Texture>> textures, glm::vec3 lightPos) {
+void Mesh::Draw3DIn2D(glm::vec2 translation, glm::vec4 rotation, glm::vec3 scale, std::shared_ptr<Camera> camera, std::vector<std::shared_ptr<Shader>> shaders, std::vector<std::shared_ptr<Texture>> textures, glm::vec3 lightPos) {
      glEnable(GL_DEPTH_TEST);
-     glm::mat4 model = glm::mat4(1.0f);
-     model = glm::translate(model, translation);
+
+     //glm::mat4 projection = camera->GetOrthographic();
+     glm::mat4 projection(1.0f);
+
+     glm::mat4 view(1.0f);
+
+     glm::mat4 model(1.0f);
+     model = glm::translate(model, glm::vec3(translation/camera->GetScreenSize(), 0.0f));
      model = glm::rotate(model, glm::radians(rotation[3]), glm::vec3(rotation[0], rotation[1], rotation[2]));
      model = glm::scale(model, scale);
 
-     glm::mat4 view(1.0f);
-     glm::mat4 projection(1.0f);
-
-     unsigned int i = 0;
-     for (auto t : textures) {
-          t->Bind(i);
-          i++;
+     if (textures[0] != NULL) {
+          unsigned int i = 0;
+          for (auto t : textures) {
+               t->Bind(i);
+               i++;
+          }
      }
 
      for (auto s : shaders) {
           s->use();
-          s->setMat4("view", view);
           s->setMat4("projection", projection);
+          s->setMat4("view", view);
           s->setMat4("model", model);
      }
-
-     /*if (texture) {
-          texture->Bind(0);
-     }
-     shader->use();
-     shader->setMat4("view", view);
-     shader->setMat4("projection", projection);
-     shader->setMat4("model", model);*/
 
      vertexArray->Bind();
      glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
 
      vertexArray->Unbind();
-     /*if (texture) {
-          texture->Unbind();
-     }*/
-
-     for (auto t : textures) { t->Unbind(); }
+     if (textures[0] != NULL) for (auto t : textures) { t->Unbind(); }
 }
 
-void Mesh::Draw2D(glm::vec3 translation, float rotation, glm::vec2 scale, std::vector<std::shared_ptr<Shader>> shaders, std::vector<std::shared_ptr<Texture>> textures) {
+void Mesh::Draw2D(glm::vec2 translation, float rotation, glm::vec2 scale, std::shared_ptr<Camera> camera, std::vector<std::shared_ptr<Shader>> shaders, std::vector<std::shared_ptr<Texture>> textures) {
      glDisable(GL_DEPTH_TEST);
-     glm::mat4 model = glm::mat4(1.0f);
-     model = glm::translate(model, translation);
+
+     //glm::mat4 projection = camera->GetOrthographic();
+     glm::mat4 projection(1.0f);
+
+     //glm::mat4 view = camera->GetView();
+     glm::mat4 view(1.0f);
+
+     glm::mat4 model(1.0f);
+     model = glm::translate(model, glm::vec3(translation[0]/camera->GetScreenSize()[0], translation[1]/camera->GetScreenSize()[1], 0.0f));
      model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
      model = glm::scale(model, glm::vec3(scale, 1.0f));
 
-     unsigned int i = 0;
-     for (auto t : textures) {
-          t->Bind(i);
-          i++;
+     if (textures[0] != NULL) {
+          unsigned int i = 0;
+          for (auto t : textures) {
+               t->Bind(i);
+               i++;
+          }
      }
 
      for (auto s : shaders) {
           s->use();
+          s->setMat4("projection", projection);
+          s->setMat4("view", view);
           s->setMat4("model", model);
      }
-
-     /*if (texture) {
-          texture->Bind(0);
-     }
-     shader->use();
-     shader->setMat4("model", model);*/
 
      vertexArray->Bind();
      glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
 
      vertexArray->Unbind();
-     /*if (texture) {
-          texture->Unbind();
-     }*/
+     if (textures[0] != NULL) for (auto t : textures) { t->Unbind(); }
+}
+*/
+
+void Mesh::DrawMesh() {
+     this->vertexArray->Bind();
+     glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
+
+     this->vertexArray->Unbind();
 }
