@@ -31,14 +31,14 @@ float lastFrame = 0.0f;
 //glm::vec3 lightPos;
 
 //CONSTANT GLOBALS
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 1280;
+const unsigned int SCR_HEIGHT = 720;
 
 //FUNCTIONS
 int main(int argc, char** argv) {
 
      //Create Window
-     windowPtr = Window::CreateWindow("Learn OpenGL", SCR_WIDTH, SCR_HEIGHT, framebuffer_size_callback, keyCallback);
+     windowPtr = Window::CreateWindow("Learn OpenGL", SCR_WIDTH, SCR_HEIGHT, framebuffer_size_callback, keyCallback, false);
 
      //Create Camera
      camera = Camera::CreateCamera(glm::vec3(0.0f, 0.0f, 6.0f), glm::vec2(SCR_WIDTH, SCR_HEIGHT), 45.0f, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 2.0f);
@@ -110,8 +110,9 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 }
 
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-     /*if (action == GLFW_PRESS) {
+     if (action == GLFW_PRESS) {
           switch (key) {
+          /*
           //Spin Toggle
           case GLFW_KEY_R:
                spin = !spin;
@@ -139,8 +140,12 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
                     windowPtr->UpdateTitle("SpinSpeed = " + std::to_string(angleIncrement));
                }
                break;
+          */
+          case GLFW_KEY_F:
+               windowPtr->ToggleFullscreen();
+               break;
           }
-     }*/
+     }
 }
 
 void processInput() {

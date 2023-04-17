@@ -2,8 +2,13 @@
 
 #include <stb_image.h>
 
-Window::Window(const std::string& title, int width, int height, void(*frameBufferCallback), void(*keyCallback)) {
+Window::Window(const std::string& title, int width, int height, void(*frameBufferCallback), void(*keyCallback), bool fullscreen) {
      glfwSetErrorCallback([](int code, const char* msg) {throw msg;});
+
+     windowWidth = width;
+     windowHeight = height;
+     monitorWidth = 0;
+     monitorHeight = 0;
 
      glfwInit();
      glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -11,7 +16,7 @@ Window::Window(const std::string& title, int width, int height, void(*frameBuffe
      glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
      glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-     this->window = glfwCreateWindow(width, height, title.c_str(), NULL, NULL);
+     this->window = glfwCreateWindow(windowWidth, windowHeight, title.c_str(), NULL, NULL);
      if (this->window == NULL) {
           fprintf(stderr, "Failed to create GLFW window\n");
           glfwTerminate();
@@ -28,6 +33,13 @@ Window::Window(const std::string& title, int width, int height, void(*frameBuffe
      }
 
      glfwSwapInterval(0);
+
+     monitor = glfwGetPrimaryMonitor();
+     fullscreenMode = fullscreen;
+
+     glfwGetMonitorPhysicalSize(monitor, &monitorWidth, &monitorHeight);
+
+     SetFullscreen();
 }
 
 Window::~Window() {
@@ -35,8 +47,8 @@ Window::~Window() {
      glfwTerminate();
 }
 
-std::shared_ptr<Window> Window::CreateWindow(const std::string& title, int width, int height, void(*frameBufferCallback), void(*keyCallback)) {
-     std::shared_ptr<Window> window = std::shared_ptr<Window>(new Window(title, width, height, frameBufferCallback, keyCallback));
+std::shared_ptr<Window> Window::CreateWindow(const std::string& title, int width, int height, void(*frameBufferCallback), void(*keyCallback), bool fullscreen) {
+     std::shared_ptr<Window> window = std::shared_ptr<Window>(new Window(title, width, height, frameBufferCallback, keyCallback, fullscreen));
 
      GLFWimage image;
      image.pixels = stbi_load("resources/textures/cat.jpg", &image.width, &image.height, NULL, 4);
@@ -72,4 +84,17 @@ void Window::Close() {
 
 bool Window::ShouldClose() {
      return glfwWindowShouldClose(this->window);
+}
+
+void Window::ToggleFullscreen() {
+     fullscreenMode = !fullscreenMode;
+     SetFullscreen();
+}
+
+void Window::SetFullscreen() {
+     glfwSetWindowMonitor(this->window, fullscreenMode ? this->monitor : NULL,
+                         fullscreenMode ? 0 : monitorWidth/2 ,
+                         fullscreenMode ? 0 : monitorHeight/2,
+                         fullscreenMode ? monitorWidth : windowWidth,
+                         fullscreenMode ? monitorHeight : windowHeight, 60);
 }
