@@ -1,6 +1,5 @@
 #pragma once
 
-//#include <vector>
 #include <map>
 #include <memory>
 #include <string>
@@ -8,11 +7,13 @@
 template <class T>
 class FileManager {
 private:
-     //std::vector<std::pair<std::string, std::shared_ptr<T>>> files;
      std::map<std::string, T*> files;
-     //std::map<std::string, std::shared_ptr<T>> files;
 public:
      FileManager() {}
+
+     static std::shared_ptr<FileManager> Create() {
+          return std::shared_ptr<FileManager>(new FileManager());
+     }
 
      ~FileManager() { UnloadAll(); }
 
@@ -20,7 +21,6 @@ public:
           std::string keyName = GetKeyName(fileName);
 
           if (files.find(keyName) != files.end()) return;
-          //files.emplace(keyName, T::Create(fileName));
           files.emplace(keyName, new T(fileName));
      }
 
@@ -28,7 +28,6 @@ public:
           std::string keyName = GetKeyName(fileOne);
 
           if (files.find(keyName) != files.end()) return;
-          //files.emplace(keyName, T::Create(fileOne, fileTwo));
           files.emplace(keyName, new T(fileOne, fileTwo));
      }
 
@@ -40,18 +39,16 @@ public:
           files.erase(files.begin(), files.end());
      }
 
-     //std::shared_ptr<T> GetValue(std::string keyName) {
      T* GetValue(std::string keyName) {
-          //if (files.empty) return;
           return files[keyName];
-          //return files.at(keyName);
      }
 
      static std::string GetKeyName(std::string fileName) {
           std::string keyName = "";
 
-          keyName = fileName.substr(fileName.find_last_of("/\\") + 1);
-          keyName = keyName.substr(0, keyName.find_last_of("."));
+          size_t path = fileName.find_last_of("/\\") + 1;
+          size_t ext = fileName.find_last_of(".");
+          keyName = fileName.substr(path, ext - path);
 
           return keyName;
      }

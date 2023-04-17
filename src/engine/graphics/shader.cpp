@@ -55,7 +55,7 @@ std::string Shader::readFile(const std::string_view& filepath) {
      return result;
 }
 
-void Shader::compileShader(uint32_t id, const char* const source, int length) {
+void Shader::compileShader(uint32_t id, const char* const source, size_t length) {
      glShaderSource(id, 1, &source, 0);
      glCompileShader(id);
 

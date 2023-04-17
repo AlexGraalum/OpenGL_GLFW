@@ -6,7 +6,7 @@ VertexArray::VertexArray() {
 
 void VertexArray::LinkAttribute(VertexBuffer vertexBuffer, GLuint layout, GLuint compCount, GLenum type, GLsizeiptr stride, void* offset) {
      vertexBuffer.Bind();
-     glVertexAttribPointer(layout, compCount, type, GL_FALSE, stride, offset);
+     glVertexAttribPointer(layout, compCount, type, GL_FALSE, (GLsizei)stride, offset);
      glEnableVertexAttribArray(layout);
      vertexBuffer.Unbind();
 }

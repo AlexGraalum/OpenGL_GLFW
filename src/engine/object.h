@@ -15,14 +15,10 @@ private:
      glm::vec4 rotation;
      glm::vec3 scale;
 public:
-     //Object(std::string meshFilePath, std::string vertexShaderPath, std::string fragmentShaderPath, std::string textureFilePath, glm::vec3 position, glm::vec4 rotation, glm::vec3 scale);
-     //Object(std::shared_ptr<Mesh> mesh, std::shared_ptr<Shader> shader, std::shared_ptr<Texture> texture, glm::vec3 position, glm::vec4 rotation, glm::vec3 scale);
      Object(Mesh* mesh, Shader* shader, Texture* texture, glm::vec3 position, glm::vec4 rotation, glm::vec3 scale);
 
      ~Object();
 
-     //static std::shared_ptr<Object> CreateObject(std::string meshFilePath, std::string vertexShaderPath, std::string fragmentShaderPath, std::string textureFilePath, glm::vec3 position, glm::vec4 rotation, glm::vec3 scale);
-     //static std::shared_ptr<Object> CreateObject(std::shared_ptr<Mesh> mesh, std::shared_ptr<Shader> shader, std::shared_ptr<Texture> texture, glm::vec3 position, glm::vec4 rotation, glm::vec3 scale);
      static std::shared_ptr<Object> CreateObject(Mesh* mesh, Shader* shader, Texture* texture, glm::vec3 position, glm::vec4 rotation, glm::vec3 scale);
 
      void SetPosition(glm::vec3 position) { this->position = position; }

@@ -13,7 +13,7 @@ private:
 
      static std::string readFile(const std::string_view& filepath);
 
-     void compileShader(uint32_t id, const char* const source, int length);
+     void compileShader(uint32_t id, const char* const source, size_t length);
      void checkCompilerErrors(unsigned int shader, std::string type);
 public:
      Shader(const std::string_view& vertexPath, const std::string_view& fragmentPath);
