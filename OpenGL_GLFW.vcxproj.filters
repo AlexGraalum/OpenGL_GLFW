@@ -45,7 +45,7 @@
     <ClCompile Include="src\engine\graphics\window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\engine\graphics\object.cpp">
+    <ClCompile Include="src\engine\object.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -80,7 +80,7 @@
     <ClInclude Include="src\engine\graphics\window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\engine\graphics\object.h">
+    <ClInclude Include="src\engine\object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\engine\file_manager.h">

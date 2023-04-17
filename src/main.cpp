@@ -1,8 +1,8 @@
 //Includes
 #include "engine\graphics\window.h"
 #include "engine\graphics\camera.h"
-#include "engine\graphics\object.h"
 
+#include "engine\object.h"
 #include "engine\file_manager.h"
 
 #include <stdlib.h>
@@ -136,6 +136,7 @@ int main(int argc, char** argv) {
      meshManager->LoadFile("resources/models/cube.obj");
      meshManager->LoadFile("resources/models/ship.obj");
      meshManager->LoadFile("resources/models/pyramid.obj");
+     meshManager->LoadFile("resources/models/square.obj");
 
      //Load Shaders
      shaderManager->LoadFile("resources/shaders/litCube.vs", "resources/shaders/litCube.fs");
@@ -152,6 +153,8 @@ int main(int argc, char** argv) {
      auto litCube =   Object::CreateObject(  meshManager->GetValue("cube"),     shaderManager->GetValue("litCube"),     textureManager->GetValue("catCubeLabeled"),   glm::vec3(1.0f, 0.0f, 0.0f),  glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.5f));
      auto pyramid =   Object::CreateObject(  meshManager->GetValue("pyramid"),  shaderManager->GetValue("litCube"),     textureManager->GetValue("cat"),   glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.25f));
      auto ship =      Object::CreateObject(  meshManager->GetValue("ship"),     shaderManager->GetValue("litCube"),     nullptr,                           glm::vec3(0.0f, 1.0f, 0.0f),  glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.25f));
+
+     auto square = Object::CreateObject(meshManager->GetValue("square"), shaderManager->GetValue("square"), textureManager->GetValue("cat"), glm::vec3(0.4f, 0.4f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.2f));
 
      //std::shared_ptr<Object> object = Object::CreateObject("resources/models/cube.obj", "resources/shaders/litCube.vs", "resources/shaders/litCube.fs", "resources/textures/cat.jpg", glm::vec3(0.0f, 0.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 0.0f), glm::vec3(1.0f));
      //std::shared_ptr<Object> object = Object::CreateObject(meshManager->GetValue("cube"), shaderManager->GetValue("litCube"), textureManager->GetValue("cat"), glm::vec3(0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(1.0f));
@@ -198,6 +201,8 @@ int main(int argc, char** argv) {
           pyramid->Draw3D(camera, unlitCube->GetPosition());
           ship->Draw3D(camera, unlitCube->GetPosition());
 
+          //square->Draw3D(camera, glm::vec3(0.0f));
+
           //object->Draw3D(camera, lightPos);
           //cubeMesh->Draw3D(glm::vec3(0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.5f), camera, { unLitCubeShader }, { texture }, {});
           //cubeMesh->Draw3D(lightPos, glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.1f), camera, { unLitCubeShader }, { NULL }, {});
@@ -209,7 +214,8 @@ int main(int argc, char** argv) {
           //shipMesh->Draw3D(   glm::vec3(-1.0f,  1.0f,  0.0f), glm::vec4(0.0f, 1.0f, 0.0f, angle), glm::vec3(1.0f), camera, { litCubeShader }, { NULL },       lightPos);
 
           //Render 2D Scene
-          pyramid->Draw2D();
+          //pyramid->Draw2D();
+          square->Draw2D();
           //squareMesh->Draw2D(glm::vec2(200.0f, 0.0f), 0.0f, glm::vec2(0.5f), camera, { squareShader }, { texture });
           //for (unsigned int i = 0; i < (sizeof(squarePos) / sizeof(squarePos[0])); i++) {
           //     squareMesh->Draw2D(squarePos[i], squareRot[i], squareScale[i], camera, {squareShader}, {texture});

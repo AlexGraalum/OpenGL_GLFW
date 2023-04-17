@@ -1,8 +1,8 @@
 # pragma once
 
-#include "mesh.h"
-#include "texture.h"
-#include "shader.h"
+#include "graphics\mesh.h"
+#include "graphics\texture.h"
+#include "graphics\shader.h"
 
 
 class Object {
