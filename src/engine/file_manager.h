@@ -17,18 +17,20 @@ public:
 
      ~FileManager() { UnloadAll(); }
 
-     void LoadFile(std::string fileName) {
-          std::string keyName = GetKeyName(fileName);
+     void LoadFile(std::string name, std::string fileName) {
+          //std::string keyName = GetKeyName(fileName);
 
-          if (files.find(keyName) != files.end()) return;
-          files.emplace(keyName, new T(fileName));
+          //if (files.find(keyName) != files.end()) return;
+          if (files.find(name) != files.end()) return;
+          files.emplace(name, new T(fileName));
      }
 
-     void LoadFile(std::string fileOne, std::string fileTwo) {
-          std::string keyName = GetKeyName(fileOne);
+     void LoadFile(std::string name, std::string fileOne, std::string fileTwo) {
+          //std::string keyName = GetKeyName(fileOne);
 
-          if (files.find(keyName) != files.end()) return;
-          files.emplace(keyName, new T(fileOne, fileTwo));
+          //if (files.find(keyName) != files.end()) return;
+          if (files.find(name) != files.end()) return;
+          files.emplace(name, new T(fileOne, fileTwo));
      }
 
      void UnloadFile(std::string name) {

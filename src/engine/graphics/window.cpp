@@ -92,9 +92,11 @@ void Window::ToggleFullscreen() {
 }
 
 void Window::SetFullscreen() {
-     glfwSetWindowMonitor(this->window, fullscreenMode ? this->monitor : NULL,
-                         fullscreenMode ? 0 : monitorWidth/2 ,
-                         fullscreenMode ? 0 : monitorHeight/2,
-                         fullscreenMode ? monitorWidth : windowWidth,
-                         fullscreenMode ? monitorHeight : windowHeight, 60);
+     const GLFWvidmode* mode = glfwGetVideoMode(this->monitor);
+
+     if (fullscreenMode) {
+          glfwSetWindowMonitor(this->window, this->monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+     } else {
+          glfwSetWindowMonitor(this->window, NULL, monitorWidth / 2, monitorHeight/2, windowWidth, windowHeight, mode->refreshRate);
+     }
 }

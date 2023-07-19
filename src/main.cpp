@@ -5,6 +5,7 @@
 #include "engine\object.h"
 
 #include "engine\file_manager.h"
+#include "engine\object_manager.h"
 
 //PROTOTYPES
 void framebuffer_size_callback(GLFWwindow*, int, int);
@@ -21,24 +22,30 @@ std::shared_ptr<FileManager<Mesh>> meshManager;
 std::shared_ptr<FileManager<Shader>> shaderManager;
 std::shared_ptr<FileManager<Texture>> textureManager;
 
+std::shared_ptr<ObjectManager> worldObjectManager;
+std::shared_ptr<ObjectManager> screenObjectManager;
+
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-//bool spin = false;
-//float angle = 0.0f;
-//float angleIncrement = 10.0f;
-//
-//glm::vec3 lightPos;
+bool spin = false;
+float angle = 0.0f;
+float angleIncrement = 10.0f;
+
+glm::vec3 lightPos = glm::vec3(0.0f);
 
 //CONSTANT GLOBALS
 const unsigned int SCR_WIDTH = 1280;
 const unsigned int SCR_HEIGHT = 720;
 
+const unsigned int MIN_SPIN = 10;
+const unsigned int MAX_SPIN = 100;
+
 //FUNCTIONS
 int main(int argc, char** argv) {
 
      //Create Window
-     windowPtr = Window::CreateWindow("Learn OpenGL", SCR_WIDTH, SCR_HEIGHT, framebuffer_size_callback, keyCallback, false);
+     windowPtr = Window::CreateWindow("Render System", SCR_WIDTH, SCR_HEIGHT, framebuffer_size_callback, keyCallback, false);
 
      //Create Camera
      camera = Camera::CreateCamera(glm::vec3(0.0f, 0.0f, 6.0f), glm::vec2(SCR_WIDTH, SCR_HEIGHT), 45.0f, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 2.0f);
@@ -48,30 +55,76 @@ int main(int argc, char** argv) {
      meshManager = FileManager<Mesh>::Create();
      shaderManager = FileManager<Shader>::Create();
      textureManager = FileManager<Texture>::Create();
+     worldObjectManager = ObjectManager::Create();
+     screenObjectManager = ObjectManager::Create();
 
      //Load Meshes
-     meshManager->LoadFile("resources/models/cube.obj");
-     meshManager->LoadFile("resources/models/ship.obj");
-     meshManager->LoadFile("resources/models/pyramid.obj");
-     meshManager->LoadFile("resources/models/square.obj");
+     meshManager->LoadFile("model_3D_cube", "resources/models/cube.obj");
+     meshManager->LoadFile("model_3D_ship", "resources/models/ship.obj");
+     meshManager->LoadFile("model_3D_pyramid", "resources/models/pyramid.obj");
+     meshManager->LoadFile("model_2D_square", "resources/models/square.obj");
 
      //Load Shaders
-     shaderManager->LoadFile("resources/shaders/litCube.vs", "resources/shaders/litCube.fs");
-     shaderManager->LoadFile("resources/shaders/cube.vs", "resources/shaders/cube.fs");
-     shaderManager->LoadFile("resources/shaders/square.vs", "resources/shaders/square.fs");
+     shaderManager->LoadFile("shader_lit", "resources/shaders/litCube.vs", "resources/shaders/litCube.fs");
+     shaderManager->LoadFile("shader_unlit", "resources/shaders/cube.vs", "resources/shaders/cube.fs");
+     shaderManager->LoadFile("shader_square", "resources/shaders/square.vs", "resources/shaders/square.fs");
 
      //Load Textures
-     textureManager->LoadFile("resources/textures/cat.jpg");
-     textureManager->LoadFile("resources/textures/catCube.jpg");
-     textureManager->LoadFile("resources/textures/catCubeLabeled.png");
+     textureManager->LoadFile("tex_cat", "resources/textures/cat.jpg");
+     textureManager->LoadFile("tex_catCube", "resources/textures/catCube.jpg");
+     textureManager->LoadFile("tex_catCubeLabeled", "resources/textures/catCubeLabeled.png");
 
-     //Create Objects
-     //                                      Mesh                               Shader                                  Texture                                      Position                      Rotation                           Scale
-     auto unlitCube = Object::CreateObject(  meshManager->GetValue("cube"),     shaderManager->GetValue("cube"),        nullptr,                                     glm::vec3(0.0f, 0.0f, 0.0f),  glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.1f));
-     auto litCube   = Object::CreateObject(  meshManager->GetValue("cube"),     shaderManager->GetValue("litCube"),     textureManager->GetValue("catCubeLabeled"),  glm::vec3(1.0f, 0.0f, 0.0f),  glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.5f));
-     auto pyramid   = Object::CreateObject(  meshManager->GetValue("pyramid"),  shaderManager->GetValue("litCube"),     textureManager->GetValue("cat"),             glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.25f));
-     auto ship      = Object::CreateObject(  meshManager->GetValue("ship"),     shaderManager->GetValue("litCube"),     nullptr,                                     glm::vec3(0.0f, 1.0f, 0.0f),  glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.25f));
-     auto square    = Object::CreateObject(  meshManager->GetValue("square"),   shaderManager->GetValue("square"),      textureManager->GetValue("cat"),             glm::vec3(0.4f, 0.4f, 0.0f),  glm::vec4(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.2f));
+     //Create 3D Objects
+     //Mesh, Shader, Texture, Position, Rotation, Scale
+     worldObjectManager->LoadObject("unlitCube",
+          Object::CreateObject(meshManager->GetValue("model_3D_cube"),
+                               shaderManager->GetValue("shader_unlit"),
+                               nullptr,
+                               glm::vec3(0.0f),
+                               glm::vec4(1.0f, 0.0f, 0.0f, 0.0f),
+                               glm::vec3(0.1f)));
+
+     worldObjectManager->LoadObject("catCube",
+          Object::CreateObject(meshManager->GetValue("model_3D_cube"),
+                               shaderManager->GetValue("shader_lit"),
+                               textureManager->GetValue("tex_catCubeLabeled"),
+                               glm::vec3(1.0f, 0.0f, 0.0f),
+                               glm::vec4(1.0f, 0.0f, 0.0f, 0.0f),
+                               glm::vec3(0.5f)));
+
+     
+     worldObjectManager->LoadObject("pyramid",
+          Object::CreateObject(meshManager->GetValue("model_3D_pyramid"),
+                               shaderManager->GetValue("shader_lit"),
+                               textureManager->GetValue("tex_cat"),
+                               glm::vec3(-1.0f, 0.0f, 0.0f),
+                               glm::vec4(1.0f, 0.0f, 0.0f, 0.0f),
+                               glm::vec3(0.25f)));
+     
+     worldObjectManager->LoadObject("ship",
+          Object::CreateObject(meshManager->GetValue("model_3D_ship"),
+                               shaderManager->GetValue("shader_lit"),
+                               nullptr,
+                               glm::vec3(0.0f, 1.0f, 0.0f),
+                               glm::vec4(1.0f, 0.0f, 0.0f, 0.0f),
+                               glm::vec3(0.25f)));
+     
+     //Create 2D Objects
+     screenObjectManager->LoadObject("square",
+          Object::CreateObject(meshManager->GetValue("model_2D_square"),
+                               shaderManager->GetValue("shader_square"),
+                               textureManager->GetValue("tex_cat"),
+                               glm::vec3(0.4f, 0.4f, 0.0f),
+                               glm::vec4(1.0f, 0.0f, 0.0f, 0.0f),
+                               glm::vec3(0.2f)));
+
+     screenObjectManager->LoadObject("pyramid",
+          Object::CreateObject(meshManager->GetValue("model_3D_pyramid"),
+                               shaderManager->GetValue("shader_square"),
+                               textureManager->GetValue("tex_cat"),
+                               glm::vec3(-1.0f, 0.0f, 0.0f),
+                               glm::vec4(1.0f, 0.0f, 0.0f, 0.0f),
+                               glm::vec3(0.25f)));
 
      while (!windowPtr->ShouldClose()) {
           glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -88,15 +141,22 @@ int main(int argc, char** argv) {
           glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
           ////Render 3D Scene
-          unlitCube->Draw3D(camera, glm::vec3(0.0f));
+          //unlitCube->Draw3D(camera, glm::vec3(0.0f));
+          //
+          //litCube->Draw3D(camera, unlitCube->GetPosition());
+          //pyramid->Draw3D(camera, unlitCube->GetPosition());
+          //ship->Draw3D(camera, unlitCube->GetPosition());
 
-          litCube->Draw3D(camera, unlitCube->GetPosition());
-          pyramid->Draw3D(camera, unlitCube->GetPosition());
-          ship->Draw3D(camera, unlitCube->GetPosition());
+          //auto unlitcube = worldObjectManager->getObject("unlitCube");
+          //unlitcube->Draw3D(camera, glm::vec3(0.0f));
+
+          worldObjectManager->Render3DObjects(camera, lightPos);
 
           //Render 2D Scene
-          pyramid->Draw2D();
-          square->Draw2D();
+          //pyramid->Draw2D();
+          //square->Draw2D();
+
+          screenObjectManager->Render2DObjects();
 
           //Poll Events and Swap Buffers
           windowPtr->Flush();
@@ -112,18 +172,17 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
      if (action == GLFW_PRESS) {
           switch (key) {
-          /*
           //Spin Toggle
           case GLFW_KEY_R:
                spin = !spin;
                break;
-
           //Spin Speed Increase
           case GLFW_KEY_EQUAL:
-               if (angleIncrement < MAXSPIN) {
-                    if (mods == GLFW_MOD_SHIFT && MAXSPIN - angleIncrement >= 5.0f) {
+               if (angleIncrement < MAX_SPIN) {
+                    if (mods == GLFW_MOD_SHIFT && MAX_SPIN - angleIncrement >= 5.0f) {
                          angleIncrement += 5.0f;
-                    } else {
+                    }
+                    else {
                          angleIncrement += 1.0f;
                     }
                     windowPtr->UpdateTitle("SpinSpeed = " + std::to_string(angleIncrement));
@@ -131,16 +190,17 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
                break;
           //Spin Speed Decrease
           case GLFW_KEY_MINUS:
-               if (angleIncrement > MINSPIN) {
-                    if (mods == GLFW_MOD_SHIFT && angleIncrement - MINSPIN >= 5.0f) {
+               if (angleIncrement > MIN_SPIN) {
+                    if (mods == GLFW_MOD_SHIFT && angleIncrement - MIN_SPIN >= 5.0f) {
                          angleIncrement -= 5.0f;
-                    } else {
+                    }
+                    else {
                          angleIncrement -= 1.0f;
                     }
                     windowPtr->UpdateTitle("SpinSpeed = " + std::to_string(angleIncrement));
                }
                break;
-          */
+          //Fullscreen Toggle
           case GLFW_KEY_F:
                windowPtr->ToggleFullscreen();
                break;
@@ -163,16 +223,21 @@ void processInput() {
      if (windowPtr->ProcessInput(GLFW_KEY_LEFT_CONTROL)) camera->MoveDown(deltaTime);
 
      ////Light Source Control
-     //if (windowPtr->ProcessInput(GLFW_KEY_J)) { lightPos += (deltaTime * 10.0f) * glm::vec3(1.0f, 0.0f, 0.0f); }
-     //if (windowPtr->ProcessInput(GLFW_KEY_L)) { lightPos -= (deltaTime * 10.0f) * glm::vec3(1.0f, 0.0f, 0.0f); }
-     //if (windowPtr->ProcessInput(GLFW_KEY_K)) { lightPos -= (deltaTime * 10.0f) * glm::vec3(0.0f, 0.0f, 1.0f); }
-     //if (windowPtr->ProcessInput(GLFW_KEY_I)) { lightPos += (deltaTime * 10.0f) * glm::vec3(0.0f, 0.0f, 1.0f); }
-     //if (windowPtr->ProcessInput(GLFW_KEY_U)) { lightPos -= (deltaTime * 10.0f) * glm::vec3(0.0f, 1.0f, 0.0f); }
-     //if (windowPtr->ProcessInput(GLFW_KEY_O)) { lightPos += (deltaTime * 10.0f) * glm::vec3(0.0f, 1.0f, 0.0f); }
+     if (windowPtr->ProcessInput(GLFW_KEY_J)) { lightPos += (deltaTime * 10.0f) * glm::vec3(1.0f, 0.0f, 0.0f); }
+     if (windowPtr->ProcessInput(GLFW_KEY_L)) { lightPos -= (deltaTime * 10.0f) * glm::vec3(1.0f, 0.0f, 0.0f); }
+     if (windowPtr->ProcessInput(GLFW_KEY_K)) { lightPos -= (deltaTime * 10.0f) * glm::vec3(0.0f, 0.0f, 1.0f); }
+     if (windowPtr->ProcessInput(GLFW_KEY_I)) { lightPos += (deltaTime * 10.0f) * glm::vec3(0.0f, 0.0f, 1.0f); }
+     if (windowPtr->ProcessInput(GLFW_KEY_U)) { lightPos -= (deltaTime * 10.0f) * glm::vec3(0.0f, 1.0f, 0.0f); }
+     if (windowPtr->ProcessInput(GLFW_KEY_O)) { lightPos += (deltaTime * 10.0f) * glm::vec3(0.0f, 1.0f, 0.0f); }
 }
 
 void Animate() {
-     //if(spin) angle += (deltaTime * angleIncrement);
+     if (spin) {
+          angle += (deltaTime * angleIncrement);
+          worldObjectManager->GetObject("catCube")->SetRotation(glm::vec4(1.0f, 0.0f, 0.0f, angle));
+          worldObjectManager->GetObject("ship")->SetRotation(glm::vec4(0.0f, 1.0f, 0.0f, angle));
+     }
+     worldObjectManager->GetObject("unlitCube")->SetPosition(lightPos);
 }
 
 
